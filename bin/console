@@ -1,0 +1,22 @@
+#!/usr/bin/env php
+<?php
+
+/* 
+ * Copyright (c) Michel Le Quer
+ * All rights reserved.
+ */
+
+require __DIR__.'/../vendor/autoload.php';
+
+define('ROOT_DIR', __DIR__.'/..');
+
+use MLequer\Command\SetupCommand;
+use Symfony\Component\Console\Application;
+
+$application = new Application('PHPCI-Setup', '0.1-dev');
+
+$setupCommand = new SetupCommand();
+$setupCommand->setRootDir(ROOT_DIR);
+
+$application->add($setupCommand);
+$application->run();
