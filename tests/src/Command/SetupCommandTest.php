@@ -31,7 +31,7 @@ class SetupCommandTest extends \PHPUnit_Framework_TestCase {
     public function testDryRunExecute() {
         $this->tester->execute(array(
             'command' => $this->command->getName(),
-            'dry-run' => true,
+            '--dry-run' => true,
             'name' => "Test Project"
         ));
         $output = $this->tester->getDisplay();
