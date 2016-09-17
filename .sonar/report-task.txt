@@ -1,5 +1,0 @@
-projectKey=phpci:setup
-serverUrl=http://localhost:9000/sonar
-dashboardUrl=http://localhost:9000/sonar/dashboard/index/phpci:setup
-ceTaskId=AVc35VwG-9N5vWnTL5TI
-ceTaskUrl=http://localhost:9000/sonar/api/ce/task?id=AVc35VwG-9N5vWnTL5TI
