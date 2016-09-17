@@ -3,6 +3,8 @@
 <project name="PHPCISetup" default="phpcs">
     <target name="prepare" depends="clean">
         <mkdir dir="${project.basedir}/build/logs"/>
+        <mkdir dir="${project.basedir}/build/pdepend"/>
+        <mkdir dir="${project.basedir}/build/docs"/>
     </target>
 
     <target name="clean">
@@ -19,19 +21,20 @@
     </target>
 
     <target name="phpcs-ci">
-        <phpcodesniffer standard="PSR2" encoding="UTF-8" haltonerror="true">
-            <fileset dir="${project.basedir}/src">
-                                    <include name="**/*.php"/>
-                                                    <exclude name="**/vendor/**" />
-                                    <exclude name="**/build/**" />
-                            </fileset>
-            <formatter type="xml" outfile="${project.basedir}/build/logs/phpcs.xml"/>
-            <formatter type="checkstyle" outfile="${project.basedir}/build/logs/checkstyle-phpcs.xml"/>
-        </phpcodesniffer>
+        <exec executable="${project.basedir}/vendor/bin/phpcs" logoutput="true">
+            <arg value="--standard=PSR2"/>
+            <arg value="--tab-width=4"/>
+            <arg value="--encoding=UTF-8"/>
+            <arg value="--extensions=php"/>
+            <arg value="--ignore=vendor,build"/>
+            <arg value="--report-xml=${project.basedir}/build/logs/phpcs.xml"/>
+            <arg value="--report-checkstyle=${project.basedir}/build/logs/phpcs.xml"/>
+            <arg path="${project.basedir}/src"/>
+        </exec>
     </target>
 
     <target name="phpcbf" description="Fixes coding standard violations using PHP_CodeSniffer Fixer">
-        <exec executable="phpcbf" logoutput="true">
+        <exec executable="${project.basedir}/vendor/bin/phpcbf" logoutput="true">
             <arg value="--tabWidth=4"/>
             <arg value="--standard=PSR2"/>
             <arg value="--extensions=php"/>
@@ -41,17 +44,21 @@
     </target>
 
     <target name="tests" description="Run PHPUnit tests and coverage based on configuration">
-        <exec executable="phpunit" logoutput="true">
-            <arg value="--configuration ${project.basedir}/Resources/phpunit.xml"/>
+        <exec executable="${project.basedir}/vendor/bin/phpunit" logoutput="true">
+            <arg value="--configuration" />
+            <arg path="${project.basedir}/phpunit.xml"/>
         </exec>
     </target>
 
     <target name="phploc">
         <exec executable="${project.basedir}/vendor/bin/phploc" logoutput="true">
             <arg value="--count-tests"/>
-            <arg value="--log-csv ${project.basedir}/build/logs/phploc.csv"/>
-            <arg value="--log-xml ${project.basedir}/build/logs/phploc.xml"/>
-            <arg path="${project.basedir}/src ${project.basedir}/tests"/>
+            <arg value="--log-csv"/>
+            <arg path="${project.basedir}/build/logs/phploc.csv"/>
+            <arg value="--log-xml"/>
+            <arg path="${project.basedir}/build/logs/phploc.xml"/>
+            <arg path="${project.basedir}/src"/>
+            <arg path="${project.basedir}/tests"/>
         </exec>
     </target>
 
@@ -77,7 +84,8 @@
             <arg path="${project.basedir}/src"/>
             <arg value="xml"/>
             <arg path="${project.basedir}/Resources/phpmd.xml"/>
-            <arg value="--reportfile ${project.basedir}/build/logs/pmd.xml"/>
+            <arg value="--reportfile"/>
+            <arg path="${project.basedir}/build/logs/pmd.xml"/>
         </exec>
     </target>
 
@@ -91,8 +99,21 @@
     <target name="phpcpd-ci"
             description="Find duplicate code using PHPCPD and print human readable output. Intended for usage on the command line before committing.">
         <exec executable="${project.basedir}/vendor/bin/phpcpd" logoutput="true">
-            <arg value="--log-pmd ${project.basedir}/build/logs/pmd-cpd.xml" />
+            <arg value="--log-pmd" />
+            <arg path="${project.basedir}/build/logs/pmd-cpd.xml" />
             <arg path="${project.basedir}/src" />
+        </exec>
+    </target>
+
+    <target name="docs" description="Generate api documentation">
+        <exec executable="sami" logoutput="true">
+            <arg value="update" />
+            <arg path="${project.basedir}/Resources/sami.php" />
+        </exec>
+    </target>
+
+    <target name="sonar" description="Parse with sonar-scanner">
+        <exec executable="/opt/sonar-scanner/bin/sonar-scanner" logoutput="true">
         </exec>
     </target>
 

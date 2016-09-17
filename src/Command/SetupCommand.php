@@ -12,7 +12,6 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Finder\Finder;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -22,13 +21,10 @@ use Symfony\Component\Console\Style\SymfonyStyle;
  *
  * @author michel
  */
-class SetupCommand extends Command
-{
+class SetupCommand extends Command {
 
     private $rootDir;
     private $templateFolder;
-    private $twigCache;
-    
     /**
      * The composer dev dependencies
      * @var array
@@ -42,8 +38,10 @@ class SetupCommand extends Command
         "jakub-onderka/php-parallel-lint:*",
         "phpunit/php-code-coverage:*",
         "pdepend/pdepend:*",
-        "phploc/phploc:*"
+        "phploc/phploc:*",
+            //  "sami/sami:dev-master@dev" currently waiting for console v3 support, use local
     ];
+
     /**
      *
      * @var SymfonyStyle
@@ -58,8 +56,7 @@ class SetupCommand extends Command
     private $currentDirectory;
     private $project;
 
-    protected function configure()
-    {
+    protected function configure() {
         $this
                 ->setName('setup')
                 ->setDescription('Setup a project with phing for continous integration')
@@ -70,23 +67,24 @@ class SetupCommand extends Command
                 ->addOption('source', 's', InputOption::VALUE_REQUIRED, 'Source folder', 'src')
                 ->addOption('tests', 't', InputOption::VALUE_REQUIRED, 'Tests folder', 'tests')
                 ->addOption('exclude', 'e', InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Exclude folders', ['vendor', 'build'])
-                ->addOption('extension', 'x', InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'File extension', ['php'])
+                ->addOption('extensions', 'x', InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'File extensions', ['php'])
                 ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Dry run')
+                ->addOption('skip-composer', null, InputOption::VALUE_NONE, 'Skip composer update')
         ;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
-    {
+    protected function execute(InputInterface $input, OutputInterface $output) {
         $this->setupVariables($input->getOption('destination'), $input->getOption('resources'));
         $this->io = new SymfonyStyle($input, $output);
 
         $this->project = new \stdClass();
         $this->project->name = $input->getArgument('name');
+        $this->project->key = $this->makeKey($input->getArgument('name'));
         $this->project->build = $input->getOption('build-folder');
         $this->project->src = $input->getOption('source');
         $this->project->tests = $input->getOption('tests');
         $this->project->excluded = $input->getOption('exclude');
-        $this->project->extension = $input->getOption('extension');
+        $this->project->extensions = $input->getOption('extensions');
         $this->project->resources = $input->getOption('resources');
 
         $buildXml = $this->twig->render('build.xml.twig', array('project' => $this->project));
@@ -104,15 +102,30 @@ class SetupCommand extends Command
         }
         // write the build file
         $filesystem->dumpFile('build.xml', $buildXml);
-        // make the build directories
+        // make the build and Resources directories
         $filesystem->mkdir([
-            $input->getOption('build-folder').'/logs',
-            $input->getOption('build-folder').'/pdepend'
+            $input->getOption('build-folder') . '/logs',
+            $input->getOption('build-folder') . '/pdepend',
+            $input->getOption('resources')
         ]);
-        
+        // render and write/copy the templates ,docs config and tests bootstrap
+        $phpunit = $this->twig->render('phpunit.xml.twig', array('project' => $this->project));
+        $filesystem->dumpFile('phpunit.xml', $phpunit);
+
+        $sami = $this->twig->render('sami.php.twig', array('project' => $this->project));
+        $filesystem->dumpFile($input->getOption('resources') . '/sami.php', $sami);
+
+        $sonar = $this->twig->render('sonar-project.properties.twig', array('project' => $this->project));
+        $filesystem->dumpFile('sonar-project.properties', $sonar);
+
+        $filesystem->copy($this->templateFolder . '/phpmd.xml', $input->getOption('resources') . '/phpmd.xml');
+        $filesystem->copy($this->templateFolder . '/TestBootstrap.php', $input->getOption('tests') . '/TestBootstrap.php');
+
         // install composer dependencies
-        $this->installComposerDependencies();
-        
+        if (!$input->getOption('skip-composer')) {
+            $this->installComposerDependencies();
+        }
+
         $this->io->success("PHP continuous integration setup done!");
     }
 
@@ -121,42 +134,41 @@ class SetupCommand extends Command
      *
      * @param string $rootDir
      */
-    public function setRootDir($rootDir)
-    {
+    public function setRootDir($rootDir) {
         $this->rootDir = $rootDir;
     }
 
-    private function setupVariables()
-    {
+    private function setupVariables() {
         if (!$this->rootDir) {
             throw new \RuntimeException("Root folder is missing");
         }
         $this->currentDirectory = getcwd();
         $this->templateFolder = $this->rootDir . '/templates';
-        $this->twigCache - $this->rootDir . '/cache';
         $this->initTwig();
     }
 
-    private function initTwig()
-    {
+    private function initTwig() {
         \Twig_Autoloader::register();
 
         $loader = new \Twig_Loader_Filesystem($this->templateFolder);
         $this->twig = new \Twig_Environment($loader, array(
-            'cache' => $this->twigCache,
             'strict_variables' => true
         ));
     }
 
-    public function installComposerDependencies()
-    {
+    private function installComposerDependencies() {
         $deps = implode(' ', $this->dependencies);
         $process = new Process("composer require --dev $deps");
         $process->run(function ($type, $buffer) {
-                $this->io->writeln([
-                    "<info>Composer output:</info>",
-                    $buffer
-                ]);
+            $this->io->writeln([
+                "<info>Composer output [$type]:</info>",
+                $buffer
+            ]);
         });
     }
+
+    private function makeKey($string) {
+        return strtolower(preg_replace(['/([a-z\d])([A-Z])/', '/([^_])([A-Z][a-z])/'], '$1:$2', $string));
+    }
+
 }

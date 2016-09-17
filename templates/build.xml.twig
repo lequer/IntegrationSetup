@@ -3,6 +3,8 @@
 <project name="{{ project.name }}" default="phpcs">
     <target name="prepare" depends="clean">
         <mkdir dir="${project.basedir}/{{ project.build }}/logs"/>
+        <mkdir dir="${project.basedir}/{{ project.build }}/pdepend"/>
+        <mkdir dir="${project.basedir}/{{ project.build }}/docs"/>
     </target>
 
     <target name="clean">
@@ -12,49 +14,51 @@
     <target name="phpcs">
         <exec executable="${project.basedir}/vendor/bin/phpcs" logoutput="true">
             <arg value="--standard=PSR2"/>
-            <arg value="--extensions={{ project.extension | join(',')}}"/>
+            <arg value="--extensions={{ project.extensions | join(',')}}"/>
             <arg value="--ignore={{ project.excluded | join(',')}}"/>
             <arg path="${project.basedir}/{{ project.src }}"/>
         </exec>
     </target>
 
     <target name="phpcs-ci">
-        <phpcodesniffer standard="PSR2" encoding="UTF-8" haltonerror="true">
-            <fileset dir="${project.basedir}/{{ project.src }}">
-                {% for ext in project.extension %}
-                    <include name="**/*.{{ext}}"/>
-                {% endfor %}
-                {% for folder in project.excluded %}
-                    <exclude name="**/{{ folder }}/**" />
-                {% endfor %}
-            </fileset>
-            <formatter type="xml" outfile="${project.basedir}/{{ project.build }}/logs/phpcs.xml"/>
-            <formatter type="checkstyle" outfile="${project.basedir}/{{ project.build }}/logs/checkstyle-phpcs.xml"/>
-        </phpcodesniffer>
+        <exec executable="${project.basedir}/vendor/bin/phpcs" logoutput="true">
+            <arg value="--standard=PSR2"/>
+            <arg value="--tab-width=4"/>
+            <arg value="--encoding=UTF-8"/>
+            <arg value="--extensions={{ project.extensions | join(',')}}"/>
+            <arg value="--ignore={{ project.excluded | join(',')}}"/>
+            <arg value="--report-xml=${project.basedir}/{{ project.build }}/logs/phpcs.xml"/>
+            <arg value="--report-checkstyle=${project.basedir}/{{ project.build }}/logs/phpcs.xml"/>
+            <arg path="${project.basedir}/{{ project.src }}"/>
+        </exec>
     </target>
 
     <target name="phpcbf" description="Fixes coding standard violations using PHP_CodeSniffer Fixer">
-        <exec executable="phpcbf" logoutput="true">
+        <exec executable="${project.basedir}/vendor/bin/phpcbf" logoutput="true">
             <arg value="--tabWidth=4"/>
             <arg value="--standard=PSR2"/>
-            <arg value="--extensions={{ project.extension | join(',')}}"/>
+            <arg value="--extensions={{ project.extensions | join(',')}}"/>
             <arg value="--ignore={{ project.excluded | join(',')}}"/>
             <arg path="${project.basedir}/{{ project.src }}"/>
         </exec>
     </target>
 
     <target name="tests" description="Run PHPUnit tests and coverage based on configuration">
-        <exec executable="phpunit" logoutput="true">
-            <arg value="--configuration ${project.basedir}/{{ project.resources? project.resources ~ '/' }}phpunit.xml"/>
+        <exec executable="${project.basedir}/vendor/bin/phpunit" logoutput="true">
+            <arg value="--configuration" />
+            <arg path="${project.basedir}/phpunit.xml"/>
         </exec>
     </target>
 
     <target name="phploc">
         <exec executable="${project.basedir}/vendor/bin/phploc" logoutput="true">
             <arg value="--count-tests"/>
-            <arg value="--log-csv ${project.basedir}/{{ project.build }}/logs/phploc.csv"/>
-            <arg value="--log-xml ${project.basedir}/{{ project.build }}/logs/phploc.xml"/>
-            <arg path="${project.basedir}/{{ project.src }} ${project.basedir}/{{ project.tests }}"/>
+            <arg value="--log-csv"/>
+            <arg path="${project.basedir}/{{ project.build }}/logs/phploc.csv"/>
+            <arg value="--log-xml"/>
+            <arg path="${project.basedir}/{{ project.build }}/logs/phploc.xml"/>
+            <arg path="${project.basedir}/{{ project.src }}"/>
+            <arg path="${project.basedir}/{{ project.tests }}"/>
         </exec>
     </target>
 
@@ -80,7 +84,8 @@
             <arg path="${project.basedir}/{{ project.src }}"/>
             <arg value="xml"/>
             <arg path="${project.basedir}/{{ project.resources? project.resources ~ '/' }}phpmd.xml"/>
-            <arg value="--reportfile ${project.basedir}/build/logs/pmd.xml"/>
+            <arg value="--reportfile"/>
+            <arg path="${project.basedir}/{{ project.build }}/logs/pmd.xml"/>
         </exec>
     </target>
 
@@ -94,8 +99,21 @@
     <target name="phpcpd-ci"
             description="Find duplicate code using PHPCPD and print human readable output. Intended for usage on the command line before committing.">
         <exec executable="${project.basedir}/vendor/bin/phpcpd" logoutput="true">
-            <arg value="--log-pmd ${project.basedir}/{{ project.build }}/logs/pmd-cpd.xml" />
+            <arg value="--log-pmd" />
+            <arg path="${project.basedir}/{{ project.build }}/logs/pmd-cpd.xml" />
             <arg path="${project.basedir}/{{ project.src }}" />
+        </exec>
+    </target>
+
+    <target name="docs" description="Generate api documentation">
+        <exec executable="sami" logoutput="true">
+            <arg value="update" />
+            <arg path="${project.basedir}/{{ project.resources }}/sami.php" />
+        </exec>
+    </target>
+
+    <target name="sonar" description="Parse with sonar-scanner">
+        <exec executable="/opt/sonar-scanner/bin/sonar-scanner" logoutput="true">
         </exec>
     </target>
 

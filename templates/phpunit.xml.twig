@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/5.4/phpunit.xsd"
+         bootstrap="{{ project.tests }}/TestBootstrap.php"
+         backupGlobals="false"
+         beStrictAboutCoversAnnotation="true"
+         beStrictAboutOutputDuringTests="true"
+         beStrictAboutTestsThatDoNotTestAnything="true"
+         beStrictAboutTodoAnnotatedTests="true"
+         verbose="true">
+    <testsuite>
+        <directory suffix="Test.php">{{ project.tests }}</directory>
+    </testsuite>
+
+    <filter>
+        <whitelist processUncoveredFilesFromWhitelist="true">
+            <directory suffix=".php">{{ project.src }}</directory>
+        </whitelist>
+    </filter>
+    
+    <logging>
+        <log type="coverage-html" target="{{ project.build }}/coverage"/>
+        <log type="coverage-clover" target="{{ project.build }}/logs/clover.xml"/>
+        <log type="coverage-crap4j" target="{{ project.build }}/logs/crap4j.xml"/>
+        <log type="junit" target="{{ project.build }}/logs/junit.xml" logIncompleteSkipped="false"/>
+    </logging>
+    
+    <php>
+        <ini name="display_errors" value="On" />
+        <ini name="display_startup_errors" value="On" />
+    </php>
+
+</phpunit>
