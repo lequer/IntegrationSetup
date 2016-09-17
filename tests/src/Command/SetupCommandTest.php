@@ -36,6 +36,7 @@ class SetupCommandTest extends \PHPUnit_Framework_TestCase {
         ));
         $output = $this->tester->getDisplay();
         $this->assertContains('Test Project', $output);
+        $this->assertContains('<target name="sonar"', $output);
     }
 
 
