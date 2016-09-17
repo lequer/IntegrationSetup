@@ -10,6 +10,15 @@
     </target>
 
     <target name="phpcs">
+        <exec executable="${project.basedir}/vendor/bin/phpcs" logoutput="true">
+            <arg value="--standard=PSR2"/>
+            <arg value="--extensions={{ project.extension | join(',')}}"/>
+            <arg value="--ignore={{ project.excluded | join(',')}}"/>
+            <arg path="${project.basedir}/{{ project.src }}"/>
+        </exec>
+    </target>
+
+    <target name="phpcs-ci">
         <phpcodesniffer standard="PSR2" encoding="UTF-8" haltonerror="true">
             <fileset dir="${project.basedir}/{{ project.src }}">
                 {% for ext in project.extension %}
@@ -54,7 +63,7 @@
             <arg value="--jdepend-xml=${project.basedir}/{{ project.build }}/logs/jdepend.xml"/>
             <arg value="--jdepend-chart=${project.basedir}/{{ project.build }}/pdepend/dependencies.svg"/>
             <arg value="--overview-pyramid=${project.basedir}/{{ project.build }}/pdepend/overview-pyramid.svg"/>
-            <arg path="${project.basedir}/{{ project.src }} "/>
+            <arg path="${project.basedir}/{{ project.src }}/"/>
         </exec>
     </target>
 

@@ -13,44 +13,73 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Finder\Finder;
+use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Process\Process;
+use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
  * The setup commmand
  *
  * @author michel
  */
-class SetupCommand extends Command {
+class SetupCommand extends Command
+{
 
     private $rootDir;
-    private $resourceFolder;
+    private $templateFolder;
     private $twigCache;
+    
+    /**
+     * The composer dev dependencies
+     * @var array
+     */
+    private $dependencies = [
+        "squizlabs/php_codesniffer:2.*",
+        "sebastian/phpdcd",
+        "phpmd/phpmd:@stable",
+        "phpunit/phpunit:5.*",
+        "sebastian/phpcpd:*",
+        "jakub-onderka/php-parallel-lint:*",
+        "phpunit/php-code-coverage:*",
+        "pdepend/pdepend:*",
+        "phploc/phploc:*"
+    ];
+    /**
+     *
+     * @var SymfonyStyle
+     */
+    private $io;
+
     /**
      *
      * @var \Twig_Environment
      */
     private $twig;
     private $currentDirectory;
-    
     private $project;
 
-    protected function configure() {
+    protected function configure()
+    {
         $this
                 ->setName('setup')
                 ->setDescription('Setup a project with phing for continous integration')
                 ->addArgument('name', InputArgument::REQUIRED, 'Project name')
-                ->addOption('destination','d', InputOption::VALUE_REQUIRED, 'Relative destination for build.xml', '.')
-                ->addOption('build-folder','b', InputOption::VALUE_REQUIRED, 'Build folder', 'build')
-                ->addOption('resources', 'r', InputOption::VALUE_REQUIRED, 'Destination folder for the resources', 'resources')
+                ->addOption('destination', 'd', InputOption::VALUE_REQUIRED, 'Relative destination for build.xml', '.')
+                ->addOption('build-folder', 'b', InputOption::VALUE_REQUIRED, 'Build folder', 'build')
+                ->addOption('resources', 'r', InputOption::VALUE_REQUIRED, 'Destination folder for the resources', 'Resources')
                 ->addOption('source', 's', InputOption::VALUE_REQUIRED, 'Source folder', 'src')
                 ->addOption('tests', 't', InputOption::VALUE_REQUIRED, 'Tests folder', 'tests')
-                ->addOption('exclude', 'e', InputOption::VALUE_IS_ARRAY|InputOption::VALUE_REQUIRED, 'Exclude folders', ['vendor'])
-                ->addOption('extension', 'x', InputOption::VALUE_IS_ARRAY|InputOption::VALUE_REQUIRED, 'File extension', ['php'])
+                ->addOption('exclude', 'e', InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Exclude folders', ['vendor', 'build'])
+                ->addOption('extension', 'x', InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'File extension', ['php'])
+                ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Dry run')
         ;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output) {
+    protected function execute(InputInterface $input, OutputInterface $output)
+    {
         $this->setupVariables($input->getOption('destination'), $input->getOption('resources'));
-        
+        $this->io = new SymfonyStyle($input, $output);
+
         $this->project = new \stdClass();
         $this->project->name = $input->getArgument('name');
         $this->project->build = $input->getOption('build-folder');
@@ -59,40 +88,75 @@ class SetupCommand extends Command {
         $this->project->excluded = $input->getOption('exclude');
         $this->project->extension = $input->getOption('extension');
         $this->project->resources = $input->getOption('resources');
+
+        $buildXml = $this->twig->render('build.xml.twig', array('project' => $this->project));
+
+        if ($input->getOption('dry-run')) {
+            $output->writeln($buildXml);
+            return;
+        }
+
+        $filesystem = new Filesystem();
+        if ($filesystem->exists('build.xml')) {
+            if (!$this->io->confirm("Build file exists, overwrite?")) {
+                return;
+            }
+        }
+        // write the build file
+        $filesystem->dumpFile('build.xml', $buildXml);
+        // make the build directories
+        $filesystem->mkdir([
+            $input->getOption('build-folder').'/logs',
+            $input->getOption('build-folder').'/pdepend'
+        ]);
         
-        $buidlXml = $this->twig->render('build.xml.twig', array('project'=>$this->project));
-        $output->writeln($buidlXml);
+        // install composer dependencies
+        $this->installComposerDependencies();
         
-        
+        $this->io->success("PHP continuous integration setup done!");
     }
 
     /**
      * Set the root directory
-     * 
+     *
      * @param string $rootDir
      */
-    public function setRootDir($rootDir) {
+    public function setRootDir($rootDir)
+    {
         $this->rootDir = $rootDir;
     }
 
-    private function setupVariables() {
+    private function setupVariables()
+    {
         if (!$this->rootDir) {
             throw new \RuntimeException("Root folder is missing");
         }
         $this->currentDirectory = getcwd();
-        $this->resourceFolder = $this->rootDir . '/resources';
+        $this->templateFolder = $this->rootDir . '/templates';
         $this->twigCache - $this->rootDir . '/cache';
         $this->initTwig();
     }
 
-    private function initTwig() {
+    private function initTwig()
+    {
         \Twig_Autoloader::register();
 
-        $loader = new \Twig_Loader_Filesystem($this->resourceFolder);
+        $loader = new \Twig_Loader_Filesystem($this->templateFolder);
         $this->twig = new \Twig_Environment($loader, array(
             'cache' => $this->twigCache,
             'strict_variables' => true
         ));
     }
 
+    public function installComposerDependencies()
+    {
+        $deps = implode(' ', $this->dependencies);
+        $process = new Process("composer require --dev $deps");
+        $process->run(function ($type, $buffer) {
+                $this->io->writeln([
+                    "<info>Composer output:</info>",
+                    $buffer
+                ]);
+        });
+    }
 }

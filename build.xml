@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="PHPCISetup" default="phpcs">
+    <target name="prepare" depends="clean">
+        <mkdir dir="${project.basedir}/build/logs"/>
+    </target>
+
+    <target name="clean">
+        <delete dir="${project.basedir}/build"/>
+    </target>
+
+    <target name="phpcs">
+        <exec executable="${project.basedir}/vendor/bin/phpcs" logoutput="true">
+            <arg value="--standard=PSR2"/>
+            <arg value="--extensions=php"/>
+            <arg value="--ignore=vendor,build"/>
+            <arg path="${project.basedir}/src"/>
+        </exec>
+    </target>
+
+    <target name="phpcs-ci">
+        <phpcodesniffer standard="PSR2" encoding="UTF-8" haltonerror="true">
+            <fileset dir="${project.basedir}/src">
+                                    <include name="**/*.php"/>
+                                                    <exclude name="**/vendor/**" />
+                                    <exclude name="**/build/**" />
+                            </fileset>
+            <formatter type="xml" outfile="${project.basedir}/build/logs/phpcs.xml"/>
+            <formatter type="checkstyle" outfile="${project.basedir}/build/logs/checkstyle-phpcs.xml"/>
+        </phpcodesniffer>
+    </target>
+
+    <target name="phpcbf" description="Fixes coding standard violations using PHP_CodeSniffer Fixer">
+        <exec executable="phpcbf" logoutput="true">
+            <arg value="--tabWidth=4"/>
+            <arg value="--standard=PSR2"/>
+            <arg value="--extensions=php"/>
+            <arg value="--ignore=vendor,build"/>
+            <arg path="${project.basedir}/src"/>
+        </exec>
+    </target>
+
+    <target name="tests" description="Run PHPUnit tests and coverage based on configuration">
+        <exec executable="phpunit" logoutput="true">
+            <arg value="--configuration ${project.basedir}/Resources/phpunit.xml"/>
+        </exec>
+    </target>
+
+    <target name="phploc">
+        <exec executable="${project.basedir}/vendor/bin/phploc" logoutput="true">
+            <arg value="--count-tests"/>
+            <arg value="--log-csv ${project.basedir}/build/logs/phploc.csv"/>
+            <arg value="--log-xml ${project.basedir}/build/logs/phploc.xml"/>
+            <arg path="${project.basedir}/src ${project.basedir}/tests"/>
+        </exec>
+    </target>
+
+    <target name="pdepend">
+        <exec executable="${project.basedir}/vendor/bin/pdepend" logoutput="true">
+            <arg value="--jdepend-xml=${project.basedir}/build/logs/jdepend.xml"/>
+            <arg value="--jdepend-chart=${project.basedir}/build/pdepend/dependencies.svg"/>
+            <arg value="--overview-pyramid=${project.basedir}/build/pdepend/overview-pyramid.svg"/>
+            <arg path="${project.basedir}/src/"/>
+        </exec>
+    </target>
+
+    <target name="phpmd" description="Perform project mess detection using PHPMD and print human readable output. Intended for usage on the command line before committing.">
+        <exec executable="${project.basedir}/vendor/bin/phpmd" logoutput="true">
+            <arg path="${project.basedir}/src"/>
+            <arg value="text"/>
+            <arg path="${project.basedir}/Resources/phpmd.xml"/>
+        </exec>
+    </target>
+
+    <target name="phpmd-ci" description="Perform project mess detection using PHPMD and print human readable output. Intended for usage on the command line before committing.">
+        <exec executable="${project.basedir}/vendor/bin/phpmd" logoutput="true">
+            <arg path="${project.basedir}/src"/>
+            <arg value="xml"/>
+            <arg path="${project.basedir}/Resources/phpmd.xml"/>
+            <arg value="--reportfile ${project.basedir}/build/logs/pmd.xml"/>
+        </exec>
+    </target>
+
+    <target name="phpcpd"
+            description="Find duplicate code using PHPCPD and print human readable output. Intended for usage on the command line before committing.">
+        <exec executable="${project.basedir}/vendor/bin/phpcpd" logoutput="true">
+            <arg path="${project.basedir}/src" />
+        </exec>
+    </target>
+
+    <target name="phpcpd-ci"
+            description="Find duplicate code using PHPCPD and print human readable output. Intended for usage on the command line before committing.">
+        <exec executable="${project.basedir}/vendor/bin/phpcpd" logoutput="true">
+            <arg value="--log-pmd ${project.basedir}/build/logs/pmd-cpd.xml" />
+            <arg path="${project.basedir}/src" />
+        </exec>
+    </target>
+
+
+</project>
