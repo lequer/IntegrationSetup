@@ -108,7 +108,7 @@
     <target name="docs" description="Generate api documentation">
         <exec executable="sami" logoutput="true">
             <arg value="update" />
-            <arg path="${project.basedir}/{{ project.resources }}/sami.php" />
+            <arg path="${project.basedir}/{{ project.resources? project.resources ~ '/' }}sami.php" />
         </exec>
     </target>
 

@@ -75,7 +75,7 @@
         <exec executable="${project.basedir}/vendor/bin/phpmd" logoutput="true">
             <arg path="${project.basedir}/src"/>
             <arg value="text"/>
-            <arg path="${project.basedir}/Resources/phpmd.xml"/>
+            <arg path="${project.basedir}/./phpmd.xml"/>
         </exec>
     </target>
 
@@ -83,7 +83,7 @@
         <exec executable="${project.basedir}/vendor/bin/phpmd" logoutput="true">
             <arg path="${project.basedir}/src"/>
             <arg value="xml"/>
-            <arg path="${project.basedir}/Resources/phpmd.xml"/>
+            <arg path="${project.basedir}/./phpmd.xml"/>
             <arg value="--reportfile"/>
             <arg path="${project.basedir}/build/logs/pmd.xml"/>
         </exec>
@@ -108,7 +108,7 @@
     <target name="docs" description="Generate api documentation">
         <exec executable="sami" logoutput="true">
             <arg value="update" />
-            <arg path="${project.basedir}/Resources/sami.php" />
+            <arg path="${project.basedir}/./sami.php" />
         </exec>
     </target>
 
