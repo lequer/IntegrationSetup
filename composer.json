@@ -1,9 +1,9 @@
 {
-    "name": "mlequer/phpci-setup",
+    "name": "mlequer/integration-setup",
     "type": "application",
     "description": "PHP CI setup: Help setup phing and continous integration resources",
     "keywords": ["continuous integration", "setup"],
-    "homepage": "https://github.org/lequer/phpci-setup",
+    "homepage": "https://github.com/lequer/IntegrationSetup",
     "license": "MIT",
     "authors": [
         {
