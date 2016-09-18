@@ -36,6 +36,7 @@
         "sebastian/phpcpd": "*",
         "jakub-onderka/php-parallel-lint": "*",
         "phpunit/php-code-coverage": "*",
-        "phploc/phploc": "*"
+        "phploc/phploc": "*",
+        "phing/phing": "*"
     }
 }

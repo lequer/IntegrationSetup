@@ -11,6 +11,40 @@
         <delete dir="${project.basedir}/build"/>
     </target>
 
+    <!-- ============================================  -->
+    <!-- (DEFAULT) Target: main  for local run         -->
+    <!-- ============================================  -->
+    <target name="main" description="Start analyzing our application">
+        <echo msg="Start Build" />
+
+        <phingCall target="prepare" />
+        <phingCall target="phpcbf" />
+        <phingCall target="phpcs" />
+        <phingCall target="tests" />
+        <phingCall target="pdepend" />
+        <phingCall target="phpmd" />
+        <phingCall target="phpcpd" />
+        <phingCall target="phploc" />
+        <phingCall target="docs" />
+        <phingCall target="sonar" />
+
+        <echo msg="Finished Build" />
+    </target>
+
+    <!-- ====================================================  -->
+    <!-- Target: main-ci    for jenkins/travis integration     -->
+    <!-- ====================================================  -->
+    <target name="main-ci" description="Start analyzing our application">
+        <echo msg="Start Build" />
+        <phingCall target="phpcs-ci" />
+        <phingCall target="pdepend" />
+        <phingCall target="phpmd-ci" />
+        <phingCall target="phpcpd-ci" />
+        <phingCall target="phploc" />
+
+        <echo msg="Finished Build" />
+    </target>
+
     <target name="phpcs">
         <exec executable="${project.basedir}/vendor/bin/phpcs" logoutput="true">
             <arg value="--standard=PSR2"/>

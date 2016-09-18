@@ -42,6 +42,7 @@ class SetupCommand extends Command
         "phpunit/php-code-coverage:*",
         "pdepend/pdepend:*",
         "phploc/phploc:*",
+        "phing/phing:*",
             //  "sami/sami:dev-master@dev" currently waiting for console v3 support, use local
     ];
 
