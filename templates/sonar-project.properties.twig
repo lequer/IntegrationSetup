@@ -9,7 +9,12 @@ sonar.projectVersion=0.1
 # If not set, SonarQube starts looking for source code from the directory containing 
 # the sonar-project.properties file.
 sonar.sources={{ project.src }}
-sonar.exclusions={{ project.excluded | join(',')}}
+{% set excludes =  project.tests ~ '/**' %}
+{% if project.excluded is not empty %}
+{% set excludes = excludes ~ ',' ~ (project.excluded | join('/**,')) ~ '/**' %}
+{% endif %}
+
+sonar.exclusions={{ excludes }}
  
 # Encoding of the source code. Default is default system encoding
 #sonar.sourceEncoding=UTF-8
