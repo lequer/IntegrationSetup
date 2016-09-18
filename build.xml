@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<project name="PHPCISetup" default="phpcs">
+<project name="Integration-setup" default="phpcs">
     <target name="prepare" depends="clean">
         <mkdir dir="${project.basedir}/build/logs"/>
         <mkdir dir="${project.basedir}/build/pdepend"/>
@@ -101,6 +101,8 @@
             <arg value="--jdepend-xml=${project.basedir}/build/logs/jdepend.xml"/>
             <arg value="--jdepend-chart=${project.basedir}/build/pdepend/dependencies.svg"/>
             <arg value="--overview-pyramid=${project.basedir}/build/pdepend/overview-pyramid.svg"/>
+            <arg value="--ignore=vendor,build"/>
+            <arg value="--suffix=php"/>
             <arg path="${project.basedir}/src/"/>
         </exec>
     </target>

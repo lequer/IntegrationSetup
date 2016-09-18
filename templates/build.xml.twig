@@ -101,6 +101,8 @@
             <arg value="--jdepend-xml=${project.basedir}/{{ project.build }}/logs/jdepend.xml"/>
             <arg value="--jdepend-chart=${project.basedir}/{{ project.build }}/pdepend/dependencies.svg"/>
             <arg value="--overview-pyramid=${project.basedir}/{{ project.build }}/pdepend/overview-pyramid.svg"/>
+            <arg value="--ignore={{ project.excluded | join(',')}}"/>
+            <arg value="--suffix={{ project.extensions | join(',')}}"/>
             <arg path="${project.basedir}/{{ project.src }}/"/>
         </exec>
     </target>
