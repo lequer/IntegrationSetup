@@ -10,6 +10,7 @@ foreach (array(__DIR__ . '/../../../../autoload.php', __DIR__ . '/../vendor/auto
         require $file;
         break;
     }
+    die("unable to find autoload from ". __DIR__);
 }
 
 
