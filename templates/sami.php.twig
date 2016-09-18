@@ -12,6 +12,9 @@ $iterator = Finder::create()
         {% for ext in project.extensions %}
         ->name('*.{{ ext }}')
         {% endfor %}
+        {% for exc in project.excluded %}
+        ->exclude('{{ exc }}')
+        {% endfor %}
         ->in('{{ project.src }}');
 
 /*

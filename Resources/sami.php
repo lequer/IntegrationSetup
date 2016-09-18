@@ -10,6 +10,8 @@ use Symfony\Component\Finder\Finder;
 $iterator = Finder::create()
         ->files()
                 ->name('*.php')
+                        ->exclude('vendor')
+                ->exclude('build')
                 ->in('src');
 
 /*

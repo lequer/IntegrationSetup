@@ -112,6 +112,8 @@
             <arg path="${project.basedir}/src"/>
             <arg value="text"/>
             <arg path="${project.basedir}/Resources/phpmd.xml"/>
+            <arg value="--exculde"/>
+            <arg path="vendor,build"/>
         </exec>
     </target>
 
@@ -122,6 +124,8 @@
             <arg path="${project.basedir}/Resources/phpmd.xml"/>
             <arg value="--reportfile"/>
             <arg path="${project.basedir}/build/logs/pmd.xml"/>
+            <arg value="--exculde"/>
+            <arg path="vendor,build"/>
         </exec>
     </target>
 
@@ -129,7 +133,9 @@
             description="Find duplicate code using PHPCPD and print human readable output. Intended for usage on the command line before committing.">
         <exec executable="${project.basedir}/vendor/bin/phpcpd" logoutput="true">
             <arg path="${project.basedir}/src" />
-        </exec>
+                            <arg value="--exclude=vendor" />
+                            <arg value="--exclude=build" />
+                    </exec>
     </target>
 
     <target name="phpcpd-ci"
@@ -138,7 +144,9 @@
             <arg value="--log-pmd" />
             <arg path="${project.basedir}/build/logs/pmd-cpd.xml" />
             <arg path="${project.basedir}/src" />
-        </exec>
+                            <arg value="--exclude=vendor" />
+                            <arg value="--exclude=build" />
+                    </exec>
     </target>
 
     <target name="docs" description="Generate api documentation">
