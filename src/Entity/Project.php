@@ -19,7 +19,7 @@ class Project
 
     public $name;
     public $key;
-    public $buildFolder;
+    public $build;
     public $source;
     public $tests;
     public $excluded = [];

@@ -111,22 +111,22 @@ class SetupCommand extends Command
         $filesystem->dumpFile('build.xml', $buildXml);
         // make the build and Resources directories
         $filesystem->mkdir([
-            $input->getOption('build-folder') . '/logs',
-            $input->getOption('build-folder') . '/pdepend',
-            $input->getOption('resources')
+            $this->project->build . '/logs',
+            $this->project->build . '/pdepend',
+            $this->project->resources
         ]);
         // render and write/copy the templates ,docs config and tests bootstrap
         $phpunit = $this->twig->render('phpunit.xml.twig', array('project' => $this->project));
         $filesystem->dumpFile('phpunit.xml', $phpunit);
 
         $sami = $this->twig->render('sami.php.twig', array('project' => $this->project));
-        $filesystem->dumpFile($input->getOption('resources') . '/sami.php', $sami);
+        $filesystem->dumpFile($this->project->resources . '/sami.php', $sami);
 
         $sonar = $this->twig->render('sonar-project.properties.twig', array('project' => $this->project));
         $filesystem->dumpFile('sonar-project.properties', $sonar);
 
-        $filesystem->copy($this->templateFolder . '/phpmd.xml', $input->getOption('resources') . '/phpmd.xml');
-        $filesystem->copy($this->templateFolder . '/TestBootstrap.php', $input->getOption('tests') . '/TestBootstrap.php');
+        $filesystem->copy($this->templateFolder . '/phpmd.xml', $this->project->resources . '/phpmd.xml');
+        $filesystem->copy($this->templateFolder . '/TestBootstrap.php', $this->project->tests . '/TestBootstrap.php');
 
         // install composer dependencies
         if (!$input->getOption('skip-composer')) {
