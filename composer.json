@@ -38,5 +38,6 @@
         "phpunit/php-code-coverage": "*",
         "phploc/phploc": "*",
         "phing/phing": "*"
-    }
+    },
+     "bin": ["bin/phpis"]
 }
