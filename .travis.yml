@@ -7,3 +7,6 @@ php:
 
 install:
   - composer install --dev --no-interaction
+
+script:
+  - ./vendor/bin/phing main-ci
