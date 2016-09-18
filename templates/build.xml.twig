@@ -87,6 +87,9 @@
     <target name="phploc">
         <exec executable="${project.basedir}/vendor/bin/phploc" logoutput="true">
             <arg value="--count-tests"/>
+            {% for exc in project.excluded %}
+                <arg value="--exclude={{ exc }}" />
+            {% endfor %}
             <arg value="--log-csv"/>
             <arg path="${project.basedir}/{{ project.build }}/logs/phploc.csv"/>
             <arg value="--log-xml"/>

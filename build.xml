@@ -87,7 +87,9 @@
     <target name="phploc">
         <exec executable="${project.basedir}/vendor/bin/phploc" logoutput="true">
             <arg value="--count-tests"/>
-            <arg value="--log-csv"/>
+                            <arg value="--exclude=vendor" />
+                            <arg value="--exclude=build" />
+                        <arg value="--log-csv"/>
             <arg path="${project.basedir}/build/logs/phploc.csv"/>
             <arg value="--log-xml"/>
             <arg path="${project.basedir}/build/logs/phploc.xml"/>
