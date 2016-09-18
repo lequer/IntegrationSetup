@@ -1,0 +1,7 @@
+name: '{{ project.name }}'
+source: '{{ project.src }}'
+tests: '{{ project.tests }}'
+build-folder: '{{ project.build }}'
+exclude: ['{{ project.excluded | join("','") | raw }}']
+extensions: ['{{ project.extensions | join("','") |raw }}']
+resources: '{{ project.resources }}'

@@ -15,16 +15,19 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use MLequer\Entity\Project;
 
 /**
  * The setup commmand
  *
  * @author michel
  */
-class SetupCommand extends Command {
+class SetupCommand extends Command
+{
 
     private $rootDir;
     private $templateFolder;
+
     /**
      * The composer dev dependencies
      * @var array
@@ -56,7 +59,8 @@ class SetupCommand extends Command {
     private $currentDirectory;
     private $project;
 
-    protected function configure() {
+    protected function configure()
+    {
         $this
                 ->setName('setup')
                 ->setDescription('Setup a project with phing for continous integration')
@@ -66,26 +70,21 @@ class SetupCommand extends Command {
                 ->addOption('resources', 'r', InputOption::VALUE_REQUIRED, 'Destination folder for the resources', 'Resources')
                 ->addOption('source', 's', InputOption::VALUE_REQUIRED, 'Source folder', 'src')
                 ->addOption('tests', 't', InputOption::VALUE_REQUIRED, 'Tests folder', 'tests')
+                ->addOption('configuration', 'c', InputOption::VALUE_OPTIONAL, 'configuration file')
                 ->addOption('exclude', 'e', InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Exclude folders', ['vendor', 'build'])
                 ->addOption('extensions', 'x', InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'File extensions', ['php'])
                 ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Dry run')
                 ->addOption('skip-composer', null, InputOption::VALUE_NONE, 'Skip composer update')
+                ->addOption('generate-config', 'g', InputOption::VALUE_NONE, 'Generate config from parameters')
         ;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output) {
+    protected function execute(InputInterface $input, OutputInterface $output)
+    {
         $this->setupVariables($input->getOption('destination'), $input->getOption('resources'));
         $this->io = new SymfonyStyle($input, $output);
 
-        $this->project = new \stdClass();
-        $this->project->name = $input->getArgument('name');
-        $this->project->key = $this->makeKey($input->getArgument('name'));
-        $this->project->build = $input->getOption('build-folder');
-        $this->project->src = $input->getOption('source');
-        $this->project->tests = $input->getOption('tests');
-        $this->project->excluded = $input->getOption('exclude');
-        $this->project->extensions = $input->getOption('extensions');
-        $this->project->resources = $input->getOption('resources');
+        $this->project = new Project($input->getArgument('name'), $input->getOptions());
 
         $buildXml = $this->twig->render('build.xml.twig', array('project' => $this->project));
 
@@ -93,8 +92,15 @@ class SetupCommand extends Command {
             $output->writeln($buildXml);
             return;
         }
-
         $filesystem = new Filesystem();
+        if ($input->getOption('generate-config')) {
+            $config = $this->twig->render('.ci-setup.yml.twig', array('project' => $this->project));
+            $filesystem->dumpFile('.ci-setup.yml', $config);
+            $this->io->writeln($config);
+            return;
+        }
+
+
         if ($filesystem->exists('build.xml')) {
             if (!$this->io->confirm("Build file exists, overwrite?")) {
                 return;
@@ -134,11 +140,13 @@ class SetupCommand extends Command {
      *
      * @param string $rootDir
      */
-    public function setRootDir($rootDir) {
+    public function setRootDir($rootDir)
+    {
         $this->rootDir = $rootDir;
     }
 
-    private function setupVariables() {
+    private function setupVariables()
+    {
         if (!$this->rootDir) {
             throw new \RuntimeException("Root folder is missing");
         }
@@ -147,7 +155,8 @@ class SetupCommand extends Command {
         $this->initTwig();
     }
 
-    private function initTwig() {
+    private function initTwig()
+    {
         \Twig_Autoloader::register();
 
         $loader = new \Twig_Loader_Filesystem($this->templateFolder);
@@ -156,7 +165,8 @@ class SetupCommand extends Command {
         ));
     }
 
-    private function installComposerDependencies() {
+    private function installComposerDependencies()
+    {
         $deps = implode(' ', $this->dependencies);
         $process = new Process("composer require --dev $deps");
         $process->run(function ($type, $buffer) {
@@ -166,9 +176,4 @@ class SetupCommand extends Command {
             ]);
         });
     }
-
-    private function makeKey($string) {
-        return strtolower(preg_replace(['/([a-z\d])([A-Z])/', '/([^_])([A-Z][a-z])/'], '$1:$2', $string));
-    }
-
 }

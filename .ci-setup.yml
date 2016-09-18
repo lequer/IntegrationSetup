@@ -1,0 +1,7 @@
+name: 'PHPCISetup'
+source: 'src'
+tests: 'tests'
+build-folder: 'build'
+exclude: ['vendor','build']
+extensions: ['php']
+resources: 'Resources'
