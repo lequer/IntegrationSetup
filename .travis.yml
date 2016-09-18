@@ -9,4 +9,5 @@ install:
   - composer install --dev --no-interaction
 
 script:
+  - ./vendor/bin/phing prepare
   - ./vendor/bin/phing main-ci
