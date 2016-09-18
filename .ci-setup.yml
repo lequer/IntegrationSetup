@@ -1,4 +1,4 @@
-name: 'PHPCISetup'
+name: 'Integration-setup'
 source: 'src'
 tests: 'tests'
 build-folder: 'build'
