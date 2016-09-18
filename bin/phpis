@@ -5,8 +5,13 @@
  * Copyright (c) Michel Le Quer
  * All rights reserved.
  */
+foreach (array(__DIR__ . '/../../autoload.php', __DIR__ . '/../vendor/autoload.php', __DIR__ . '/vendor/autoload.php') as $file) {
+    if (file_exists($file)) {
+        require $file;
+        break;
+    }
+}
 
-require __DIR__.'/../vendor/autoload.php';
 
 define('ROOT_DIR', __DIR__.'/..');
 
