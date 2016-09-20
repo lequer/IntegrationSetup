@@ -62,7 +62,7 @@
             <arg value="--extensions={{ project.extensions | join(',')}}"/>
             <arg value="--ignore={{ project.excluded | join(',')}}"/>
             <arg value="--report-xml=${project.basedir}/{{ project.build }}/logs/phpcs.xml"/>
-            <arg value="--report-checkstyle=${project.basedir}/{{ project.build }}/logs/phpcs.xml"/>
+            <arg value="--report-checkstyle=${project.basedir}/{{ project.build }}/logs/checkstyle-phpcs.xml"/>
             <arg path="${project.basedir}/{{ project.src }}"/>
         </exec>
     </target>
