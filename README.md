@@ -1,5 +1,4 @@
-[![Build Status](https://travis-ci.org/lequer/PHP-Project-setup.svg?branch=master)](https://travis-ci.org/lequer/PHP-Project-setup)
-
+[![Build Status](https://travis-ci.org/lequer/IntegrationSetup.svg?branch=master)](https://travis-ci.org/lequer/IntegrationSetup)
 # Integration Setup
 
 This is the tool I use to setup my projects. This allows for setup consistency across multiple projects.
