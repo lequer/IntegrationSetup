@@ -1,4 +1,9 @@
-[![Build Status](https://travis-ci.org/lequer/IntegrationSetup.svg?branch=master)](https://travis-ci.org/lequer/IntegrationSetup)
+>
+> Project moved to gitlab
+>
+
+
+![Build Status](https://travis-ci.org/lequer/IntegrationSetup.svg?branch=master)](https://travis-ci.org/lequer/IntegrationSetup)
 # Integration Setup
 
 This is the tool I use to setup my projects. This allows for setup consistency across multiple projects.
